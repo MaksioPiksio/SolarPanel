@@ -77,7 +77,6 @@ listItems.forEach((item) => {
     let planetName = item.textContent;
     
     let planetData = planety.find((planet) => planet[0] === planetName);
-    console.log(planetData[1]+"+"+planetData[2]+"+"+planetData[3]);
     camera.position.setY(planetName ==='sun' ? 50 : 10);
     camera.position.setX(planetData[1]);
     camera.position.setZ(planetName ==='sun' ? planetData[4]+70 : planetData[4]+10);
@@ -91,7 +90,6 @@ const rotate = (speed) => planety.forEach((item, index) => index === 3 ? scene.g
 const animate = () => {
     requestAnimationFrame(animate);
     rotate(0.005);
-    console.log(camera.position)
     renderer.render(scene, camera);
 }
 animate();
