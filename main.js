@@ -1,15 +1,10 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-);
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ); //prettier-ignore
 const renderer = new THREE.WebGLRenderer( {canvas: document.querySelector("#bg"),} ); //prettier-ignore
+
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 camera.position.set(0, 50, 120);
@@ -17,11 +12,9 @@ renderer.render(scene, camera);
 
 const pointLight = new THREE.PointLight(0xffffff, 1000);
 pointLight.position.set(-100, 0, 0);
-// pointLight.intensity = 100000;
 const ambientLight = new THREE.AmbientLight(0xffffff);
 scene.add(pointLight, ambientLight);
 
-//helpers😡
 const lightHelper = new THREE.PointLightHelper(pointLight);
 const gridHelper = new THREE.GridHelper(200, 50);
 scene.add(lightHelper, gridHelper);
@@ -56,9 +49,12 @@ const planety = [
 
 planety.forEach((el) => addPlanet(el));
 
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 const movePlanetPosition = async (el, planetPosition) => {
-    let speed = (el[3].position.x - (el[1] - planetPosition)) / 10;
-    speed = speed < 0 ? speed * -1 : speed;
+    let speed = Math.abs(el[3].position.x - (el[1] - planetPosition)) / 10;
 
     while (el[3].position.x < el[1] - planetPosition) {
         el[3].position.x += speed;
@@ -74,22 +70,16 @@ const movePlanetPosition = async (el, planetPosition) => {
 const moveCameraPosition = async (camera, targetPosition, duration) => {
     const startPosition = camera.position.clone();
     const startTime = Date.now();
-
     return new Promise((resolve) => {
         const animateCamera = () => {
             const currentTime = Date.now();
             const elapsedTime = currentTime - startTime;
             const t = Math.min(1, elapsedTime / duration);
-
             camera.position.lerpVectors(startPosition, targetPosition, t);
 
-            if (t < 1) {
-                requestAnimationFrame(animateCamera);
-            } else {
-                resolve();
-            }
+            if (t < 1) requestAnimationFrame(animateCamera);
+            else resolve();
         };
-
         animateCamera();
     });
 };
@@ -115,11 +105,11 @@ document.querySelectorAll("li").forEach((item) => {
     });
 });
 
-const rotate = (speed) => planety.forEach((el, i) => (el[3].rotation.y += i === 0 ? speed / 10 : speed)); //prettier-ignore
-
 const animate = () => {
     requestAnimationFrame(animate);
-    rotate(0.005);
+    planety.forEach((el) => (el[3].rotation.y += 0.005));
+    planety[0][3].rotation.y -= 0.0045;
     renderer.render(scene, camera);
 };
+
 animate();
