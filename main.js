@@ -56,18 +56,61 @@ const planety = [
 
 planety.forEach((el) => addPlanet(el));
 
+const movePlanetPosition = async (el, planetPosition) => {
+    let speed = (el[3].position.x - (el[1] - planetPosition)) / 10;
+    speed = speed < 0 ? speed * -1 : speed;
+
+    while (el[3].position.x < el[1] - planetPosition) {
+        el[3].position.x += speed;
+        await new Promise((resolve) => setTimeout(resolve, 1));
+    }
+    while (el[3].position.x > el[1] - planetPosition) {
+        el[3].position.x -= speed;
+        await new Promise((resolve) => setTimeout(resolve, 1));
+    }
+    el[3].position.x = el[1] - planetPosition;
+};
+
+const moveCameraPosition = async (camera, targetPosition, duration) => {
+    const startPosition = camera.position.clone();
+    const startTime = Date.now();
+
+    return new Promise((resolve) => {
+        const animateCamera = () => {
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - startTime;
+            const t = Math.min(1, elapsedTime / duration);
+
+            camera.position.lerpVectors(startPosition, targetPosition, t);
+
+            if (t < 1) {
+                requestAnimationFrame(animateCamera);
+            } else {
+                resolve();
+            }
+        };
+
+        animateCamera();
+    });
+};
+
 document.querySelectorAll("li").forEach((item) => {
-    item.addEventListener("click", () => {
+    item.addEventListener("click", async () => {
         let planetName = item.textContent;
         let planetData = planety.find((planet) => planet[0] === planetName);
-        planety.forEach((el) => {
-            el[3].position.set(el[1] - planetData[1], 0, 0);
-        });
-        camera.position.set(
+
+        for (const el of planety) {
+            movePlanetPosition(el, planetData[1]);
+        }
+
+        const targetPosition = new THREE.Vector3(
             0,
             planetName === "sun" ? 50 : 10,
             planetName === "sun" ? planetData[2] + 70 : planetData[2] + 10
         );
+
+        await moveCameraPosition(camera, targetPosition, 1000);
+
         camera.lookAt(new THREE.Vector3(0, 0, 0));
     });
 });
